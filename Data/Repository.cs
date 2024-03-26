@@ -13,47 +13,47 @@ namespace Challenge.Data
         public DbSet<User> Users { get; set; }
         public DbSet<ChallengeClass> Challenges { get; set; }
         public DbSet<ToDo> ToDos { get; set; }
-        protected override async void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            #region Seed Users
-            var user = new User
-            {
-                Id = Guid.NewGuid(),
-                UserName = "Default",
-                Image = await GetDefaultImage(),
-            };
-            var chlng = new ChallengeClass
-            {
-                Id = Guid.NewGuid(),
-                Name = "Streak Visitors",
-                DayCount = 7,
-                StartDate = DateTime.Now,
-                UserId = user.Id
-            };
-            var todoOne = new ToDo
-            {
-                Id = Guid.NewGuid(),
-                Description = "Task 1",
-                ChallengeId = chlng.Id
-            };
-            var todoTwo = new ToDo
-            {
-                Id = Guid.NewGuid(),
-                Description = "Task 2",
-                ChallengeId = chlng.Id
-            };
-            #endregion
+        //protected override async void OnModelCreating(ModelBuilder modelBuilder)
+        //{
+        //    #region Seed Users
+        //    var user = new User
+        //    {
+        //        Id = Guid.NewGuid(),
+        //        UserName = "Default",
+        //        Image = await GetDefaultImage(), //Throwing Error in Firefox
+        //    };
+        //    var chlng = new ChallengeClass
+        //    {
+        //        Id = Guid.NewGuid(),
+        //        Name = "Streak Visitors",
+        //        DayCount = 7,
+        //        StartDate = DateTime.Now,
+        //        UserId = user.Id
+        //    };
+        //    var todoOne = new ToDo
+        //    {
+        //        Id = Guid.NewGuid(),
+        //        Description = "Task 1",
+        //        ChallengeId = chlng.Id
+        //    };
+        //    var todoTwo = new ToDo
+        //    {
+        //        Id = Guid.NewGuid(),
+        //        Description = "Task 2",
+        //        ChallengeId = chlng.Id
+        //    };
+        //    #endregion
 
-            modelBuilder.Entity<User>().HasData(user);
+        //    modelBuilder.Entity<User>().HasData(user);
 
-            // Seed Challenges
-            modelBuilder.Entity<ChallengeClass>().HasData(chlng);
+        //    // Seed Challenges
+        //    modelBuilder.Entity<ChallengeClass>().HasData(chlng);
 
-            // Seed ToDos
-            modelBuilder.Entity<ToDo>().HasData(todoOne, todoTwo);
+        //    // Seed ToDos
+        //    modelBuilder.Entity<ToDo>().HasData(todoOne, todoTwo);
 
-            base.OnModelCreating(modelBuilder);
-        }
+        //    base.OnModelCreating(modelBuilder);
+        //}
 
         private async Task<byte[]> GetDefaultImage()
         {

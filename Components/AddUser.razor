@@ -76,13 +76,10 @@
 
     async Task SumbitUser()
     {
-        if (user.Image.Length > 0 && user.UserName.Length > 4)
-        {
-            user.Id = Guid.NewGuid();
-            await service.AddNewUserAsync(user);
-            service.CurrentUser = user;
-            MudDialog.Close(DialogResult.Ok(true));
-        }
+        user.Id = Guid.NewGuid();
+        await service.AddNewUserAsync(user);
+        service.CurrentUser = user;
+        MudDialog.Close(DialogResult.Ok(true));
         StateHasChanged();
     }
 }
