@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+
+<head>  
+    <script type='application/ld+json'> 
+        {
+          "@context": "http://www.schema.org",
+          "@type": "WebSite",
+          "name": "Challenge",
+          "alternateName": "30 Day Challenge",
+          "url": "https://prashantunity.github.io/Challenge/"
+        }
+    </script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Challenge</title>
+    <meta name="description" content="30 Day Challenge ">
+    <meta name="author" content="Prashant Unity">
+    <meta name="robots" content="index, follow">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="theme-color" content="#ffffff">
+    <base href="/Challenge/" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
+    <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
+    <style>
+        body {
+            background: radial-gradient(circle, rgba(238,174,202,1) 0%, rgba(148,187,233,1) 100%);
+            background-attachment: fixed;
+        }
+
+        .containerCentered {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 95vh;
+        }
+
+        .containerCenteredButton {
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        .zoom {
+            transition: transform .5s;
+            border-style: solid;
+            border-radius: 16px;
+            box-shadow: 0 0 12px 4px rgba(0, 0, 0, 0.5);
+            border-width: 5px;
+            background-image: linear-gradient(0deg, rgba(34,193,195,1) 0%, rgba(253,187,45,1) 100%);
+        }
+
+            .zoom:hover {
+                transform: scale(1.02);
+            }
+
+        .my-custom-class {
+            backdrop-filter: blur(10px);
+        } 
+        .pulse {
+            animation: pulse 3s infinite;
+            cursor: cell;
+            animation-timing-function: linear;
+        }
+
+
+        @@keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.4);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        } 
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div class="container">
+            <div class="containerCentered">
+                <div class="containerCenteredButton">
+                    <img src="loading.svg" />
+                    <h1 style="text-align: center;">Loading...</h1>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+    <script src="_framework/blazor.webassembly.js"></script>
+    <script src="_content/MudBlazor/MudBlazor.min.js"></script>
+    <script src="download.js"></script>
+</body>
+
+</html>
