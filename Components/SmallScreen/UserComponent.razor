@@ -1,0 +1,223 @@
+﻿@if(@busy)
+{
+    <LoadingComponent/>
+}
+else 
+{
+    @if (challenges.Length < 11)
+    {
+        <MudText @onclick="@(()=>AddUser())" Align="Align.Center" Class="pulse">
+            <MudImage Src="AddUser.png"
+                      Height="50"
+                      Width="50" Alt="New User" />
+        </MudText>
+    }
+    <MudExpansionPanels Style="background-color:transparent">
+        @foreach (var user in (service.GetUsersAsync().Result))
+        { 
+            <MudExpansionPanel >
+                <TitleContent>
+                    <MudPaper Class="d-flex flex-row flex-grow-1" Elevation="0" >
+                        @if(user.Image.Length>100)
+                        {
+                            
+                            <MudImage Src="@(Tools.ByteToString(user.Image))" 
+                                Width="50" Height="50" 
+                                Elevation="5" style="border-radius:100%"
+                                @onclick="@(()=>UserSelected(user))" />
+                        }
+                        else
+                        {
+                            <MudImage 
+                                Src="IconCodefrydev.png" 
+                                Width="50" Height="50" 
+                                Elevation="5" 
+                                style="border-radius:100%" 
+                                @onclick="@(()=>UserSelected(user))" />
+                        }
+                        <MudText Class="ma-4" Align="Align.Center" ><strong>@user.UserName</strong></MudText>
+                    </MudPaper>
+                </TitleContent>
+                <ChildContent>
+                    <MudPaper Class="d-flex flex-column flex-grow-1" Elevation="0">
+
+                        <MudText Typo="Typo.subtitle2" Class="mt-2">
+                            <strong>
+                                @user.UserDescription
+                            </strong>
+
+                        </MudText>
+                        <MudPaper Class="d-flex flex-row-reverse flex-grow-1 gap-4" Elevation="0">
+                            <MudButton 
+                                Variant="Variant.Filled" 
+                                Color="Color.Error" 
+                                StartIcon="@Icons.Material.Filled.Delete"
+                                @onclick="@(()=>DeleteUser(user))" >
+                                User
+                            </MudButton>
+                            <MudButton 
+                                Variant="Variant.Filled" 
+                                Color="Color.Surface" 
+                                StartIcon="@Icons.Material.Filled.Edit"
+                                @onclick="@(()=>EditProfile(user))">
+                                Profile
+                            </MudButton>
+                            <MudButton Variant="Variant.Filled"
+                                        Color="Color.Success"
+                                        StartIcon="@Icons.Material.Filled.PanoramaFishEye"
+                                        @onclick="@(()=>UserSelected(user))">
+                                Tasks
+                            </MudButton>
+                        </MudPaper>
+                    </MudPaper>
+                </ChildContent>
+            </MudExpansionPanel>     
+        } 
+    </MudExpansionPanels> 
+}
+
+@code {
+    [Inject] public ISnackbar Snackbar { get; set; } = null!;
+    [Inject] public StreakService service { get; set; } = null!;
+    [Inject] public NavigationManager navManager { get; set; } = null!;
+    [Inject] public IDialogService DialogService { get; set; } = null!;  
+    string position = "Top-Center";
+}
+@code
+{
+    private bool busy;
+    private User[] challenges = Array.Empty<User>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshUiAsync();
+        await base.OnInitializedAsync();
+        Console.Clear();
+    }
+
+    private async Task RefreshUiAsync()
+    {
+        busy = true;
+        challenges = (await service.GetUsersAsync()).ToArray();
+        busy = false;
+        StateHasChanged();
+    }
+}
+
+@code{
+    async Task AddUser()
+    {
+        Console.Clear();
+        var options = new DialogOptions
+            {
+                CloseOnEscapeKey = true,
+                //DisableBackdropClick = true,
+                NoHeader = true,
+                ClassBackground = "my-custom-class"
+            };
+
+        var dialog = DialogService.Show<AddUser>("AddUser", options);
+        var result = await dialog.Result;
+
+        if (result != null)
+        {
+            if (result.Canceled)
+            {
+
+            }
+            else if ((bool)result.Data)
+            {
+                Snackbar.Configuration.PositionClass = position;
+                Snackbar.Add("User Added Sucessfully", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Configuration.PositionClass = position;
+                Snackbar.Add("Action Cancelled", Severity.Warning);
+            }
+        }
+        await RefreshUiAsync(); 
+    }
+    public void UserSelected(User user)
+    {
+        service.CurrentUser = user;
+        navManager.NavigateTo("challenge");
+    }
+    async Task EditProfile(User user)
+    {
+        if (user == null) return;
+        var options = new DialogOptions
+        {
+            CloseOnEscapeKey = true,
+            //DisableBackdropClick = true,
+            NoHeader = true,
+            ClassBackground = "my-custom-class"
+        };
+        var parameters = new DialogParameters<UpdateUserComponent>();
+        parameters.Add(x => x.user, user);
+        var dialog = DialogService.Show<UpdateUserComponent>("EditUser", parameters, options);
+        var result = await dialog.Result; 
+        if (result != null)
+        {
+            if (result.Canceled)
+            {
+
+            }
+            else if ((bool)result.Data)
+            {
+                Snackbar.Configuration.PositionClass = position;
+                Snackbar.Add($"{user.UserName} Profile Edited ", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Configuration.PositionClass = position;
+                Snackbar.Add("Cancelled", Severity.Warning);
+            }
+        }
+    }
+    async Task DeleteUser(User user)
+    {
+
+        // await service.DeleteUserByIdAsync(user.Id);
+        // await RefreshUiAsync();
+
+        // Some Logic Need To Up update
+        // while Debugging via visual Studio no problem
+        // but via Command line it throwing memory out of Bound Exception
+
+
+        var options = new DialogOptions
+        {
+            CloseOnEscapeKey = true,
+            //DisableBackdropClick = true,
+            NoHeader = true,
+            ClassBackground = "my-custom-class"
+        };
+        //var parameters = new DialogParameters<DeleteUser>();
+        //parameters.Add(x => x.user, user);
+        //var dialog = DialogService.Show<DeleteUser>("DeleteUser", parameters, options);
+        var dialog = DialogService.Show<DeleteUser>("DeleteUser", options);
+        var result = await dialog.Result;
+        await RefreshUiAsync();
+        if (result != null)
+        {
+            if (result.Canceled)
+            {
+
+            }
+            else if ((bool)result.Data)
+            { 
+                await service.DeleteUserByIdAsync(user.Id);
+                await RefreshUiAsync(); 
+                Snackbar.Configuration.PositionClass = position;
+                Snackbar.Add($"{user.UserName} Deleted Sucessfully", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Configuration.PositionClass = position;
+                Snackbar.Add("Cancelled Action", Severity.Warning);
+            }
+        }
+
+    }
+}

@@ -1,0 +1,137 @@
+﻿<MudDialog>
+    <DialogContent>
+        <MudList>
+            <MudListItem>
+                <MudTextField @bind-Value="@ChallengeName"
+                              Label="Challenge Name"
+                              Variant="Variant.Outlined" Required="true" RequiredError="Challenge Name is required"></MudTextField>
+            </MudListItem>
+            <MudListItem>
+                <div class="d-flex flex-grow-1 gap-2">
+                    <MudPaper Class="flex-initial d-flex" Width="50%" Elevation="0">
+                        <MudDatePicker PickerVariant="PickerVariant.Dialog" DisableToolbar="true" Label="Start Date" @bind-Date="@date" DateFormat="dd.MM.yyyy"></MudDatePicker>
+                    </MudPaper>
+                    <MudPaper Class="flex-initial d-flex" Width="50%" Elevation="0">
+                        <MudNumericField @bind-Value="@challenge.DayCount" Label="Days/Day" Variant="Variant.Outlined" Min="1" Step="1" />
+                    </MudPaper>
+                </div>
+            </MudListItem>
+            <MudDivider DividerType="DividerType.Middle" />
+            @if (listOftodo.Count > 0)
+            {
+                <MudExpansionPanel Text="Panel One">
+                    <TitleContent>
+                        <div class="d-flex">
+                            <MudIcon Icon="@Icons.Material.Filled.Info" class="mr-3"></MudIcon>
+                            <MudText>Added Task Count <strong>@listOftodo.Count</strong></MudText>
+                        </div>
+                    </TitleContent>
+                    <ChildContent>
+
+                        @foreach (var item in listOftodo)
+                        { 
+                            <div class="d-flex justify-space-between flex-grow-1 gap-2">
+                                <MudTextField @bind-Value="@textDummy" Label="@item" Variant="Variant.Outlined" Disabled="true" />
+
+                                <MudPaper Class="flex-initial d-flex" Width="15%" Elevation="0">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" class="mt-2"
+                                                    
+                                                   Color="Color.Error"
+                                                   OnClick="@(()=>DeleteTask(item))"
+                                                   Size="Size.Large"
+                                                   aria-label="delete" />
+                                </MudPaper>
+                            </div>
+                        }
+                    </ChildContent>
+
+                </MudExpansionPanel>
+            }
+            <MudDivider DividerType="DividerType.Middle" />
+            <MudListItem>
+                <div class="d-flex justify-space-between flex-grow-1 gap-2">
+                    <MudTextField @bind-Value="@text" Label="Task" Variant="Variant.Outlined" />
+
+                    <MudPaper Class="flex-initial d-flex" Width="15%" Elevation="0">
+                        <MudIconButton Icon="@Icons.Material.Filled.AddCircle" class="mt-2"
+                                       Color="Color.Primary" 
+                                       OnClick="AddToDoToList"
+                                       Size="Size.Large" />
+                    </MudPaper>
+                </div>
+            </MudListItem>
+
+            <MudListItem>
+                <MudButton OnClick="SubmitChallenge"
+                           FullWidth=true Variant="Variant.Outlined"
+                           Color="Color.Primary"
+                           Disabled="@disableSubmitButton">Submit Challenge</MudButton>
+            </MudListItem>
+        </MudList>
+    </DialogContent>
+</MudDialog>
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = null!;
+    [Inject] public StreakService service { get; set; } = null!;
+    [Inject] public NavigationManager navManager { get; set; } = null!;
+    string text = string.Empty;
+    string textDummy = string.Empty;
+    public string ChallengeName = string.Empty;
+    DateTime? date;
+    ChallengeClass challenge = new();
+    List<string> listOftodo = new();
+
+    bool disableSubmitButton = true;
+}
+@code
+{
+    bool CheckForValidSummition()
+    {
+        return !(listOftodo.Count > 0 && (!string.IsNullOrWhiteSpace(challenge.Name)));
+    }
+    async Task SubmitChallenge()
+    {
+        challenge.Name = ChallengeName;
+        challenge.UserId = service.CurrentUser.Id;
+        challenge.StartDate = date ?? DateTime.Now;
+        await service.AddChallengeAsync(challenge);
+        for (int i = 0; i < challenge.DayCount; i++)
+        {
+            foreach (var item in listOftodo)
+            {
+                var todoItem = new ToDo()
+                    {
+                        Id = Guid.NewGuid(),
+                        ChallengeId = challenge.Id,
+                        DayNumber = i,
+                        Description = item
+                    };
+                await service.AddTodoAsync(todoItem);
+            }
+        }
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+    void AddToDoToList()
+    {
+        if (string.IsNullOrWhiteSpace(text)) return;
+        listOftodo.Add(text);
+        text = string.Empty;
+        disableSubmitButton = CheckForValidSummition();
+        StateHasChanged();
+    }
+    void DeleteTask(string str)
+    {
+        listOftodo.Remove(str);
+        disableSubmitButton = CheckForValidSummition();
+        StateHasChanged();
+    }
+    protected override Task OnInitializedAsync()
+    {
+        if (service.CurrentUser is null)
+        {
+            navManager.NavigateTo("/");
+        }
+        listOftodo = new();
+        return base.OnInitializedAsync();
+    }
+}

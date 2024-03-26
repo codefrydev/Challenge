@@ -1,0 +1,105 @@
+﻿@page "/challenge"
+ 
+<GoBackComponent path=""/>
+<VerticalSpacerComponent Times="6" />
+<MudText Typo="Typo.h4" Align="Align.Center">
+    <UserImageComponent /> 
+    Greeting @Greeting()
+</MudText>
+<VerticalSpacerComponent Times="6" />
+
+@if (service.CurrentUser is not null)
+{
+    <MudPaper Class="d-flex flex-wrap justify-center  mx-2 gap-3 " Elevation="0" Style="background-color:transparent">
+        @foreach (var challenge in service.GetChallengesAsync(service.CurrentUser).Result)
+        {
+            <MudPaper Width="128px" Height="128px"
+                      Style="border-radius:10px; background:linear-gradient( #E4F2FF 0%, #87AED7 100%);"
+                      @onclick="()=>ShowDetailOfChanllenge(challenge)">
+                <MudText Typo="Typo.h4" Align="Align.Center" Class="mt-6 mb-6">
+                    @challenge.DayCount
+                </MudText>
+                <MudText Typo="Typo.subtitle1" Align="Align.Center">
+                    @challenge.Name
+                </MudText>
+            </MudPaper>
+        }
+
+        <MudPaper Width="128px" Height="128px"
+                  Style="border-radius:10px; background:linear-gradient( #E4F2FF 0%, #AEEDE2 100%);"
+                  @onclick="CustomClicked">
+            <MudText Typo="Typo.h4" Align="Align.Center" Class="mt-6 mb-6">
+                X
+            </MudText>
+            <MudText Typo="Typo.subtitle1" Align="Align.Center">
+                Day Challenge
+            </MudText>
+        </MudPaper>
+    </MudPaper>
+}
+
+@* Handeling of user data *@
+@code {
+    [Inject] public StreakService service { get; set; } = null!;
+    [Inject] public NavigationManager navManager { get; set; } = null!;
+    [Inject] public IDialogService DialogService { get; set; } = null!;
+
+    protected override Task OnInitializedAsync()
+    {
+        if (service.CurrentUser is null)
+        {
+            navManager.NavigateTo("/");
+        }
+        return base.OnInitializedAsync();
+    }
+
+}
+@code {
+
+
+    void ShowDetailOfChanllenge(ChallengeClass challenge)
+    {
+        service.CureentChallenge = challenge;
+        navManager.NavigateTo("Index");
+    }
+    
+    void ShowGraph()
+    {
+
+    }
+    async Task CustomClicked()
+    {
+        var options = new DialogOptions
+            {
+                CloseOnEscapeKey = true,
+                //DisableBackdropClick = true,
+                NoHeader = true,
+                ClassBackground = "my-custom-class"
+            };
+
+        var dialog = DialogService.Show<AddChallenge>("Challenge", options);
+        var result = await dialog.Result;
+
+        if (result != null)
+        {
+            //Apply Database Logic for handeling of changes
+            //user = (UserDialogueData)result.Data;
+        }
+    }
+    string Greeting()
+    {
+        return DateTime.Now.Hour switch
+        {
+            (< 12) => "🌅",
+            <= 16 => "🌞",
+            <= 20 => "🌇",
+            _ => "🌛"
+        };
+    }
+}
+
+<style>
+    .my-custom-class {
+        backdrop-filter: blur(15px);
+    }
+</style>

@@ -1,0 +1,85 @@
+﻿<MudDialog>
+    <DialogContent>
+        <MudList>
+            <MudListItem>
+                <div class="d-flex flex-grow-1 gap-2">
+                    <MudPaper Class="flex-initial d-flex" Width="90%" Elevation="0">
+                        <MudTextField @bind-Value="@user.UserName" Label="User Name" Variant="Variant.Outlined"
+                                      Required="true" RequiredError="User Name is required" />
+                    </MudPaper>
+                    <MudPaper Class="flex-initial d-flex" Width="10%" Elevation="0">
+                        <MudFileUpload T="IBrowserFile" FilesChanged="UploadFiles">
+                            <ButtonTemplate>
+                                <MudFab HtmlTag="label"
+                                        Color="Color.Success"
+                                        StartIcon="@Icons.Material.Filled.AttachFile"
+                                        for="@context.Id" />
+                            </ButtonTemplate>
+                        </MudFileUpload>
+                    </MudPaper>
+                </div>
+            </MudListItem>
+            <MudListItem >
+                <MudTextField @bind-Value="@user.UserDescription" Label="Short Description" Variant="Variant.Outlined" />
+            </MudListItem>
+            <MudListItem>
+                    <MudImage Src="@(Tools.ByteToString(user.Image))" Fluid=true Height="150" Alt="Swedish Farm House" Elevation="15" Class="rounded-lg" />
+            </MudListItem>
+
+            @if (notImage)
+            {
+                <p>Please Upload Image Only</p>
+            }
+            <MudListItem>
+                <MudButton OnClick="SumbitUser"
+                           FullWidth=true Variant="Variant.Outlined" Color="Color.Primary">Update Profile</MudButton>
+            </MudListItem>
+        </MudList>
+    </DialogContent>
+</MudDialog>
+
+
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = null!;
+    [Inject] public StreakService service { get; set; } = null!;
+    [Parameter] public User user { get; set; } = null!;
+
+    string image = string.Empty;
+    void Cancel() => MudDialog.Cancel();
+    bool notImage = false;
+
+    private async Task UploadFiles(IBrowserFile file)
+    {
+        try
+        {
+            if (!file.ContentType.StartsWith("image/"))
+            {
+                notImage = true;
+                Console.WriteLine("Please select an image file.");
+                return;
+            }
+            using var stream = file.OpenReadStream();
+            using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            user.Image = ms.ToArray();
+            image = Tools.ByteToString(ms.ToArray());
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Only Image Are Psuppose tob Profile ? Don't You Agree \n {ex.Message}");
+        }
+        
+    }
+
+    async Task SumbitUser()
+    {
+        if (user.Image.Length > 0 && user.UserName.Length > 4)
+        { 
+            await service.UpdateUserAsync(user);
+            service.CurrentUser = user;
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+    }
+}

@@ -1,0 +1,37 @@
+﻿@using System.Text.Json
+<div class="d-flex gap-0"
+     style="position: fixed;top:0; right: 0; z-index:999; background-color:rgba(191, 202, 219,0.3); border-radius:15%; margin-right:20px;marigin-top:10px;">
+    <MudTooltip Text="Show Graph" Placement="Placement.Left" Color="Color.Secondary">
+        <MudIconButton Color="Color.Dark" Icon="@Icons.Material.Filled.Assessment" aria-label="delete" OnClick="OpenDialog" />
+    </MudTooltip>
+    <MudTooltip Text="Delete/Reset" Placement="Placement.Left" Color="Color.Secondary">
+        <MudIconButton Color="Color.Error" Icon="@Icons.Material.Filled.Delete"   aria-label="delete" />
+    </MudTooltip>
+    <MudTooltip Text="Download" Placement="Placement.Bottom" Color="Color.Success">
+        <MudIconButton Color="Color.Dark" Icon="@Icons.Material.Filled.Download"  @onclick="Download" aria-label="download" />
+    </MudTooltip>
+</div>
+
+@code {
+    [Inject] public IJSRuntime JSRuntime { get; set; } = null!;
+    [Inject] public StreakService service { get; set; } = null!;
+    [Inject] public IDialogService DialogService { get; set; } = null!;
+    async Task Download()
+    { 
+        var challenges = (await service.GetUsersAsync()).ToArray();
+        string json = JsonSerializer.Serialize(challenges);
+        await JSRuntime.InvokeVoidAsync("downloadFile", "data.json", json, "application/json");
+        StateHasChanged();
+    }
+    private void OpenDialog()
+    {
+        var options = new DialogOptions
+        {
+            CloseOnEscapeKey = true,
+            //DisableBackdropClick = true,
+            NoHeader = true,
+            ClassBackground = "my-custom-class"
+        };
+        DialogService.Show<IndexPageGraph>("Simple Dialog", options);
+    }
+}

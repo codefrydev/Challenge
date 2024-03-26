@@ -1,0 +1,15 @@
+﻿<MudIconButton Style="position: fixed;top:0; left: 0; z-index:999; border-radius:15%;"
+               Class="ma-3 pulse"
+               Icon="@Icons.Material.Filled.ArrowBackIos"
+               Color="Color.Dark"
+               @onclick="@(()=>GoBack())" /> 
+
+
+@code{
+    [Inject] public NavigationManager navManager { get; set; } = null!;
+    [Parameter, EditorRequired] public string path { get; set; } = string.Empty;
+    void GoBack()
+    {
+        navManager.NavigateTo(path);
+    }
+}

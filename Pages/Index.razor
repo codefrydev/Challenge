@@ -1,0 +1,144 @@
+﻿@page "/Index"
+
+<PageTitle>@dayWithToDoList.Count Days @service.CureentChallenge.Name</PageTitle>
+<GoBackComponent path="challenge"/>
+<MudText Typo="Typo.h3" Align="Align.Center" Class="my-12">
+    <UserImageComponent/>
+    <strong>@DayCount()</strong>
+</MudText> 
+
+<DataDownloaderComponent />
+@if (service.CureentChallenge is not null)
+{
+    <MudPaper Class="d-flex flex-wrap justify-center mx-4" Elevation="0" Style="background:transparent">
+        <MudGrid>
+            @foreach (var day in dayWithToDoList)
+            {
+                <MudItem xs="12" sm="6" md="4" lg="3" xxl="2">
+
+                    <MudList Class="zoom" Clickable="true" Dense="true">
+
+                        <MudText Typo="Typo.h6" Class="ml-4">Day @dayWithToDoList.IndexOf(day)</MudText>
+                        @foreach (var item in day)
+                        {
+
+                            <MudListItem>
+                                <MudCheckBox @bind-Value="@item.IsCompleted"
+                                             Label="@item.Description"
+                                             Color="@(item.IsCompleted ? Color.Success:Color.Error)"
+                                             Style="@("text-decoration:" +
+                                                (item.IsCompleted ? "line-through":string.Empty) +";"
+                                                + "color:" +
+                                                (item.IsCompleted ?  Color.Success:string.Empty) +";" )" />
+                            </MudListItem>
+                        }
+                        <MudButton FullWidth=true
+                                   Color="@(Color.Primary)"
+                                   OnClick="@(()=>Submit(dayWithToDoList.IndexOf(day)))">
+                            Submit @dayWithToDoList.IndexOf(day) Day Task
+                        </MudButton>
+                    </MudList>
+                </MudItem>
+            }
+        </MudGrid>
+    </MudPaper>
+}
+
+@code
+{
+    [Inject] public StreakService service { get; set; } = null!;
+    [Inject] public NavigationManager navManager { get; set; } = null!; 
+    List<List<ToDo>> dayWithToDoList = new();
+    int sucessCount = 0;
+}
+@code {
+    string DayCount()
+    {
+
+
+        var count = dayWithToDoList.Count - sucessCount;
+
+        if (count == 0) return "Good Job";
+
+        return $"⏲️{count} Day Left";
+
+    }
+    int SuccessDayCount()
+    {
+        int count = 0;
+        foreach (var item in dayWithToDoList)
+        {
+            int temp = 0;
+            foreach (var todo in item)
+            {
+                if (todo.IsCompleted) temp++;
+            }
+            if (item.Count == 1 && temp == 1) count++; 
+            else if (item.Count == 2 && temp == 1) count++;
+            else if (item.Count == 3 && temp == 2) count++;
+            else if (item.Count>3 && temp >= (item.Count / 2)) count++; 
+        } 
+        return count;
+    }
+    protected override Task OnInitializedAsync()
+    {
+        if (service.CurrentUser is null)
+        {
+            navManager.NavigateTo("/");
+        }
+        if (service.CureentChallenge is null)
+        {
+            navManager.NavigateTo("challenge");
+        }
+        var allTodo = service.GetToDosAsync(service.CureentChallenge).Result.ToList();
+        for (var i = 0; i < service.CureentChallenge.DayCount; i++)
+        {
+            dayWithToDoList.Add(allTodo.Where(x => x.DayNumber == i).ToList());
+        }
+        return base.OnInitializedAsync();
+    }
+    async Task Submit(int i)
+    {
+        foreach (var item in dayWithToDoList[i])
+        {
+            await service.UpdateTodoAsync(item);
+        }
+        sucessCount = SuccessDayCount();
+        StateHasChanged();
+    }
+}
+<style>
+    body {
+        background: radial-gradient(circle, rgba(238,174,202,1) 0%, rgba(148,187,233,1) 100%);
+        background-attachment: fixed;
+    }
+
+    .containerCentered {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 95vh;
+    }
+
+    .containerCenteredButton {
+        padding: 10px;
+        font-size: 16px;
+    }
+
+    .zoom {
+        transition: transform .5s;
+        border-style: solid;
+        border-radius: 16px;
+        box-shadow: 0 0 12px 4px rgba(0, 0, 0, 0.5);
+        border-width: 5px;
+        background-image: linear-gradient(0deg, rgba(34,193,195,1) 0%, rgba(253,187,45,1) 100%);
+    }
+
+        .zoom:hover {
+            transform: scale(1.02);
+        }
+
+    .my-custom-class {
+        backdrop-filter: blur(10px);
+    }
+</style>

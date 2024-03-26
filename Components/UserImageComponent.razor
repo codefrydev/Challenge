@@ -1,0 +1,16 @@
+﻿@if (service.CurrentUser.Image.Length > 100)
+{
+    <MudImage Src="@(Tools.ByteToString(service.CurrentUser.Image))"
+              Style="border-radius:100%;" Height="110" Width="110" />
+    <br />
+}
+else
+{
+    <MudImage Src="IconCodefrydev.png" Height="110" Width="110"
+              Style="border-radius:100%;" />
+    <br />
+}
+
+@code{
+    [Inject] public StreakService service { get; set; } = null!;
+}
